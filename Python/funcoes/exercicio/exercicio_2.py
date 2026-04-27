@@ -119,11 +119,12 @@ def cadastrar_candidato():
         break
     
     while True:
-        nivel = int(input('Nivel do candidato: '))
-        if nivel == '':
+        nivel_str = (input('Nivel do candidato: '))
+        if nivel_str == '':
             print('Nivel vazio. Tente novamente')
             continue
-        elif nivel < 1:
+        nivel = int(nivel_str)
+        if nivel < 1:
             print('nivel invalido. Tente novamente')
             continue
         dados_candidato.update({'nivel': nivel})
@@ -171,17 +172,47 @@ def montar_equipe(candidatos_validos):
     classes = set()
 
     for regras in candidatos_validos:
-        if regras['classe'] != classes:
+        if regras['classe'] not in classes:
             classes.add(regras['classe'])
-            if len(equipe_montada) <= 4:
+            if len(equipe_montada) < 4:
                 equipe_montada.append(regras)
             else:
                 break
     
     return equipe_montada
 
+def relatorio_expedicao(equipe_montada, **kwargs):
+    print('=== RELATÓRIO DE EXPEDIÇÃO ===')
+
+    print(f"Missão: {kwargs.get('missao')}")
+    print(f"Destino: {kwargs.get('destino')}")
+
+    print('\nEquipe selecionada: ')
+    media_nivel = 0
+    habilidades_unicas = set()
+    for equipe in equipe_montada:
+        print(f"- {equipe['nome']} ({equipe['classe']}) | nivel {equipe['nivel']}")
+        media_nivel += equipe['nivel']
+        habilidades_unicas.update(equipe['habilidade'])
+
+    print(f'\nNível médio da equipe: {(media_nivel / len(equipe_montada)):.2f}')
+    print(f'Habilidades unicas: {habilidades_unicas}')
+
+def verificar_equipe(equipe_montada):
+    status = False
+    for verificacao in equipe_montada:
+        if verificacao['classe'] in ('curandeira', 'curandeiro'):
+            status = True
+            print(f'\nStatus: {status}. Equipe apta para a expedição!')
+            return status
+        
+    print(f'\nStatus: {status}. Equipe nao está apta para a expedição!')
+    return status
+        
+qtd_candidatos = int(input('Quantos candidatos serao avaliados? '))
+
 candidatos = []
-for i in range(6):
+for i in range(qtd_candidatos):
     print(f'candidato {i + 1}: ')
     candidato = cadastrar_candidato()
     candidatos.append(candidato)
@@ -189,4 +220,7 @@ for i in range(6):
 validacao_candidato = candidato_valido(candidatos)
 
 equipe_montada = montar_equipe(validacao_candidato)
-print(equipe_montada)
+
+relatorio_expedicao(equipe_montada, missao='Ruínas de Valdor', destino='Floresta Sombria')
+
+verificar_equipe(equipe_montada)
